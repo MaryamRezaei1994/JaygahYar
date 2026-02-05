@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace JaygahYar.Infrastructure.Persistence;
 
@@ -36,11 +37,11 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            connectionString = "Server=.;Database=JaygahYar;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+            connectionString = "Host=127.0.0.1;Port=5432;Database=JaygahYar;Username=postgres;Password=postgres;Include Error Detail=true";
         }
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-        optionsBuilder.UseSqlServer(connectionString);
+        optionsBuilder.UseNpgsql(connectionString);
 
         return new ApplicationDbContext(optionsBuilder.Options);
     }

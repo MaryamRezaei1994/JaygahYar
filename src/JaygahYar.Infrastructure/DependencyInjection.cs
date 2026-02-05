@@ -4,6 +4,7 @@ using JaygahYar.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace JaygahYar.Infrastructure;
 
@@ -15,7 +16,7 @@ public static class DependencyInjection
         if (!string.IsNullOrEmpty(connectionString))
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseNpgsql(connectionString));
         }
         else
         {
