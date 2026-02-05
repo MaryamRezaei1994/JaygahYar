@@ -1,0 +1,6 @@
+@JaygahYar.WebAPI_HostAddress = http://localhost:5155
+
+GET {{JaygahYar.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
