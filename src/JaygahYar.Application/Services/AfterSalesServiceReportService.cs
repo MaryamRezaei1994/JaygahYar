@@ -1,8 +1,10 @@
 using AutoMapper;
+using JaygahYar.Application.Constants;
 using JaygahYar.Application.DTOs;
 using JaygahYar.Application.Interfaces;
 using JaygahYar.Domain.Entities;
 using JaygahYar.Domain.Interfaces;
+using StackExchange.Redis;
 
 namespace JaygahYar.Application.Services;
 
@@ -10,23 +12,40 @@ public class AfterSalesServiceReportService : IAfterSalesServiceReportService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IDatabase _cache;
+    private readonly TimeSpan _cacheExpirationTime = TimeSpan.FromMinutes(5);
 
-    public AfterSalesServiceReportService(IUnitOfWork unitOfWork, IMapper mapper)
+    private const string CacheKeyByIdPrefix = "CacheKeyAfterSalesById-";
+    private const string CacheKeyByStationPrefix = "CacheKeyAfterSalesByStation-";
+
+    public AfterSalesServiceReportService(IUnitOfWork unitOfWork, IMapper mapper, ICacheProvider cacheProvider)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _cache = cacheProvider.Database;
     }
 
     public async Task<AfterSalesServiceReportDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var cached = await _cache.GetJsonAsync<AfterSalesServiceReportDto>(CacheKeyByIdPrefix + id);
+        if (cached != null) return cached;
+
         var entity = await _unitOfWork.AfterSalesServiceReports.GetByIdWithItemsAsync(id, cancellationToken);
-        return entity == null ? null : _mapper.Map<AfterSalesServiceReportDto>(entity);
+        if (entity == null) return null;
+        var dto = _mapper.Map<AfterSalesServiceReportDto>(entity);
+        await _cache.StringSetAsync(CacheKeyByIdPrefix + id, dto.JsonSerialize(), _cacheExpirationTime);
+        return dto;
     }
 
     public async Task<IReadOnlyList<AfterSalesServiceReportDto>> GetByStationIdAsync(Guid stationId, CancellationToken cancellationToken = default)
     {
+        var cached = await _cache.GetJsonAsync<List<AfterSalesServiceReportDto>>(CacheKeyByStationPrefix + stationId);
+        if (cached != null) return cached;
+
         var list = await _unitOfWork.AfterSalesServiceReports.GetByStationIdAsync(stationId, cancellationToken);
-        return _mapper.Map<List<AfterSalesServiceReportDto>>(list);
+        var dtos = _mapper.Map<List<AfterSalesServiceReportDto>>(list);
+        await _cache.StringSetAsync(CacheKeyByStationPrefix + stationId, dtos.JsonSerialize(), _cacheExpirationTime);
+        return dtos;
     }
 
     public async Task<AfterSalesServiceReportDto> CreateAsync(CreateAfterSalesServiceReportRequest request, CancellationToken cancellationToken = default)
@@ -88,7 +107,10 @@ public class AfterSalesServiceReportService : IAfterSalesServiceReportService
         }
         await _unitOfWork.AfterSalesServiceReports.AddAsync(report, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return _mapper.Map<AfterSalesServiceReportDto>(report);
+        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + request.StationId);
+        var dto = _mapper.Map<AfterSalesServiceReportDto>(report);
+        await _cache.StringSetAsync(CacheKeyByIdPrefix + dto.Id, dto.JsonSerialize(), _cacheExpirationTime);
+        return dto;
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -97,6 +119,8 @@ public class AfterSalesServiceReportService : IAfterSalesServiceReportService
         if (entity == null) return false;
         await _unitOfWork.AfterSalesServiceReports.DeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _cache.KeyDeleteAsync(CacheKeyByIdPrefix + id);
+        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + entity.StationId);
         return true;
     }
 }

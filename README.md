@@ -27,10 +27,11 @@ JaygahYar یک API برای مدیریت اطلاعات جایگاه‌های س
 
 - **.NET 8**
 - **ASP.NET Core Web API**
-- **Entity Framework Core 8** (SQL Server / In-Memory)
+- **Entity Framework Core 8** + **Npgsql (PostgreSQL)**
 - **Clean Architecture** (Domain, Application, Infrastructure, WebAPI)
 - **AutoMapper** — نگاشت Entity ↔ DTO
 - **FluentValidation** — اعتبارسنجی ورودی
+- **Redis (StackExchange.Redis)** — کش نتایج GET (مشابه پروژه Survey)
 - **Swagger / OpenAPI** — مستندات و تست API
 
 ---
@@ -67,10 +68,12 @@ JaygahYar/
 └── src/
     ├── JaygahYar.Domain/           # لایه دامنه
     │   ├── Common/                 # BaseEntity، Enums
+    │   ├── Configuration/          # ConfigurationData (الگوی Survey)
     │   ├── Entities/               # Station، فرم‌های نصب، گزارش پس از فروش، ...
     │   └── Interfaces/             # IRepository، IUnitOfWork، Repositoryهای اختصاصی
     │
     ├── JaygahYar.Application/      # لایه کاربرد
+    │   ├── Constants/              # CacheExtensions (Redis JSON)
     │   ├── DTOs/                   # مدل‌های ورودی/خروجی API
     │   ├── Interfaces/              # قرارداد سرویس‌ها
     │   ├── Mapping/                 # پروفایل AutoMapper
@@ -87,12 +90,15 @@ JaygahYar/
         └── appsettings.json
 ```
 
+> نسخه Go هم در فولدر `jaygahyar-go/` موجود است.
+
 ---
 
 ## پیش‌نیازها
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- (اختیاری) SQL Server برای استفاده به‌جای دیتابیس In-Memory
+- PostgreSQL
+- (اختیاری) Redis (برای فعال بودن کش)
 
 ---
 
@@ -128,21 +134,38 @@ dotnet run --project src/JaygahYar.WebAPI/JaygahYar.WebAPI.csproj
 
 ## پیکربندی
 
+### تنظیم Environment (الگوی Survey)
+
 در **`src/JaygahYar.WebAPI/appsettings.json`**:
 
-- **ConnectionStrings:DefaultConnection**  
-  - اگر خالی باشد، از **دیتابیس In-Memory** استفاده می‌شود (مناسب توسعه و تست).  
-  - برای اتصال به SQL Server، رشتهٔ اتصال را تنظیم کنید، مثلاً:
+- **Environment**: تعیین پروفایل کانفیگ (مثلاً `DEVELOPMENT`, `TEST`, `SQA`)
+- **Version**: نسخه سرویس
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=.;Database=JaygahYar;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-```
+### تنظیم Connection String دیتابیس
 
-برای محیط production توصیه می‌شود از **User Secrets** یا **متغیرهای محیطی** برای رشتهٔ اتصال استفاده شود.
+الگوی پروژه مثل `Survey` است و connection string از داخل `ConfigurationData` تامین می‌شود:
+
+- **DEBUG**: بر اساس مقدار `Environment` در `appsettings.json` انتخاب می‌شود.
+- **RELEASE**: از متغیر محیطی خوانده می‌شود:
+  - `DB_PG_CONNECTION`
+
+> اجرای Migration در استارتاپ انجام می‌شود (`db.Database.MigrateAsync()` در `Program.cs`).
+
+### تنظیم Redis برای کش
+
+کش (مانند پروژه Survey) با Redis پیاده شده است. مقادیر Redis نیز در `ConfigurationData` نگهداری می‌شوند:
+
+- **DEBUG**: بر اساس `Environment` مقداردهی می‌شود.
+- **RELEASE**: از متغیرهای محیطی خوانده می‌شود:
+  - `DB_REDIS_CONNECTION`
+  - `DB_REDIS_USERNAME`
+  - `DB_REDIS_PASSWORD`
+
+> TTL کش پیش‌فرض ۵ دقیقه است و در عملیات Create/Update/Delete کلیدهای مرتبط invalidate می‌شوند.
+
+### نکته امنیتی
+
+بهتر است اطلاعات حساس (پسورد DB/Redis) در ریپو commit نشوند و فقط از **متغیر محیطی** یا **User Secrets** استفاده شود.
 
 ---
 

@@ -5,6 +5,8 @@ using JaygahYar.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using JaygahYar.Application.Interfaces;
+using JaygahYar.Application.Services;
 
 namespace JaygahYar.Infrastructure;
 
@@ -24,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IStage2DeliveryFormRepository, Stage2DeliveryFormRepository>();
         services.AddScoped<IStage3DeliveryFormRepository, Stage3DeliveryFormRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ICacheProvider, CacheProvider>();
 
         return services;
     }
