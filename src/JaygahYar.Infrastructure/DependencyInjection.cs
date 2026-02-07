@@ -1,10 +1,10 @@
 using JaygahYar.Domain.Interfaces;
+using JaygahYar.Domain.Configuration;
 using JaygahYar.Infrastructure.Persistence;
 using JaygahYar.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Microsoft.Extensions.Configuration;
 
 namespace JaygahYar.Infrastructure;
 
@@ -12,17 +12,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        if (!string.IsNullOrEmpty(connectionString))
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(connectionString));
-        }
-        else
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase("JaygahYarDb"));
-        }
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(
+                ConfigurationData.DatabaseConnectionString,
+                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<IStationRepository, StationRepository>();
         services.AddScoped<IOilToolInstallationFormRepository, OilToolInstallationFormRepository>();

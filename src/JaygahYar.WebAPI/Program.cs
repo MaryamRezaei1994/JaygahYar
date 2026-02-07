@@ -1,9 +1,15 @@
 using JaygahYar.Application;
 using JaygahYar.Infrastructure;
+using JaygahYar.Domain.Configuration;
 using Microsoft.EntityFrameworkCore;
 using JaygahYar.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --------------------------------------------------
+// Configuration (pattern copied from Survey)
+// --------------------------------------------------
+ConfigurationData.Config(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -17,7 +23,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
 }
 
 if (app.Environment.IsDevelopment())
