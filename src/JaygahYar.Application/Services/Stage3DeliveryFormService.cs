@@ -50,53 +50,42 @@ public class Stage3DeliveryFormService : IStage3DeliveryFormService
 
     public async Task<Stage3DeliveryFormDto> CreateAsync(CreateStage3DeliveryFormRequest request, CancellationToken cancellationToken = default)
     {
+        var stationName = request.StationName.Trim();
+        var station = await _unitOfWork.Stations.FindByNameOrMobileAsync(stationName, request.Mobile, cancellationToken);
+        if (station == null)
+        {
+            station = new Station
+            {
+                Name = stationName,
+                Address = request.StationAddress,
+                Mobile = request.Mobile
+            };
+            await _unitOfWork.Stations.AddAsync(station, cancellationToken);
+        }
+        else
+        {
+            station.Address = request.StationAddress;
+            station.Mobile = request.Mobile;
+            await _unitOfWork.Stations.UpdateAsync(station, cancellationToken);
+        }
+
         var form = new Stage3DeliveryForm
         {
             FormNumber = request.FormNumber,
-            FormDate = request.FormDate,
-            Revision = request.Revision,
-            CustomerName = request.CustomerName,
-            StationName = request.StationName,
-            StationId = request.StationId,
-            StationOwnerName = request.StationOwnerName,
-            CompanyBrand = request.CompanyBrand,
-            DeliveryCommissioningDate = request.DeliveryCommissioningDate,
-            IsDelivery = request.IsDelivery,
-            IsCommissioning = request.IsCommissioning,
-            HasStage2Commissioning = request.HasStage2Commissioning,
-            HPGaugePressureBeforeStart = request.HPGaugePressureBeforeStart,
-            LPGaugePressureBeforeStart = request.LPGaugePressureBeforeStart,
-            HPGaugePressureAfterStart = request.HPGaugePressureAfterStart,
-            LPGaugePressureAfterStart = request.LPGaugePressureAfterStart,
-            InitialTemperature = request.InitialTemperature,
-            SecondaryTemperatureMin = request.SecondaryTemperatureMin,
-            CompressorMaxCurrentAmpere = request.CompressorMaxCurrentAmpere,
-            ThermometerOffTempC = request.ThermometerOffTempC,
-            ThermometerOnTempC = request.ThermometerOnTempC,
-            CompressorHasOil = request.CompressorHasOil,
-            TimeToSecondaryTempMinutes = request.TimeToSecondaryTempMinutes,
-            VaporInletOutletValvesChecked = request.VaporInletOutletValvesChecked,
-            DipHatchGasTightChecked = request.DipHatchGasTightChecked,
-            DrainHoseCapGasTightChecked = request.DrainHoseCapGasTightChecked,
-            PVValvesOperationChecked = request.PVValvesOperationChecked,
-            StationGroundToDeviceChecked = request.StationGroundToDeviceChecked,
-            FlameArresterInstalled = request.FlameArresterInstalled,
-            ManualTakeoffBlockerInstalled = request.ManualTakeoffBlockerInstalled,
-            PVCalibrationCertificateOnCollector = request.PVCalibrationCertificateOnCollector,
+            BuyerFullName = request.BuyerFullName,
+            StationId = station.Id,
+            StationAddress = request.StationAddress,
+            Mobile = request.Mobile,
+            DeviceInstallationDate = request.DeviceInstallationDate,
+            DeviceCommissioningDate = request.DeviceCommissioningDate,
             DeviceModel = request.DeviceModel,
             DeviceSerialNumber = request.DeviceSerialNumber,
-            TrainingDate = request.TrainingDate,
-            Trainee1Name = request.Trainee1Name,
-            Trainee1NationalId = request.Trainee1NationalId,
-            Trainee2Name = request.Trainee2Name,
-            Trainee2NationalId = request.Trainee2NationalId,
-            Trainee3Name = request.Trainee3Name,
-            Trainee3NationalId = request.Trainee3NationalId,
-            Remarks = request.Remarks
+            UploadedFormFilePath = request.UploadedFormFilePath,
+            Description = request.Description
         };
         await _unitOfWork.Stage3DeliveryForms.AddAsync(form, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + request.StationId);
+        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + station.Id);
         var dto = _mapper.Map<Stage3DeliveryFormDto>(form);
         await _cache.StringSetAsync(CacheKeyByIdPrefix + dto.Id, dto.JsonSerialize(), _cacheExpirationTime);
         return dto;

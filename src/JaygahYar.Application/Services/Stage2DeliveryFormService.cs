@@ -50,50 +50,41 @@ public class Stage2DeliveryFormService : IStage2DeliveryFormService
 
     public async Task<Stage2DeliveryFormDto> CreateAsync(CreateStage2DeliveryFormRequest request, CancellationToken cancellationToken = default)
     {
+        var stationName = request.StationName.Trim();
+        var station = await _unitOfWork.Stations.FindByNameOrMobileAsync(stationName, request.Mobile, cancellationToken);
+        if (station == null)
+        {
+            station = new Station
+            {
+                Name = stationName,
+                Address = request.StationAddress,
+                Mobile = request.Mobile
+            };
+            await _unitOfWork.Stations.AddAsync(station, cancellationToken);
+        }
+        else
+        {
+            station.Address = request.StationAddress;
+            station.Mobile = request.Mobile;
+            await _unitOfWork.Stations.UpdateAsync(station, cancellationToken);
+        }
+
         var form = new Stage2DeliveryForm
         {
             FormNumber = request.FormNumber,
-            FormDate = request.FormDate,
-            Revision = request.Revision,
-            CustomerName = request.CustomerName,
-            StationName = request.StationName,
-            StationId = request.StationId,
-            StationOwnerName = request.StationOwnerName,
-            CompanyBrand = request.CompanyBrand,
-            SendDate = request.SendDate,
-            Phone = request.Phone,
-            Address = request.Address,
-            HasReceivedItems = request.HasReceivedItems,
-            VacuumPumpCount = request.VacuumPumpCount,
-            MotorThreePhase = request.MotorThreePhase,
-            SinglePhaseMotorCount = request.SinglePhaseMotorCount,
-            DualWallHoseCount = request.DualWallHoseCount,
-            SeparatorCount = request.SeparatorCount,
-            CutoffCount = request.CutoffCount,
-            NozzleCount = request.NozzleCount,
-            DeliveryDate = request.DeliveryDate,
-            DeliveryAddress = request.DeliveryAddress,
-            DispenserModel = request.DispenserModel,
+            BuyerFullName = request.BuyerFullName,
+            StationId = station.Id,
+            StationAddress = request.StationAddress,
+            Mobile = request.Mobile,
+            DeviceInstallationDate = request.DeviceInstallationDate,
+            DeviceCommissioningDate = request.DeviceCommissioningDate,
             DispenserManufacturer = request.DispenserManufacturer,
-            SingleNozzleDispenserCount = request.SingleNozzleDispenserCount,
-            TwoNozzleDispenserCount = request.TwoNozzleDispenserCount,
-            FourNozzleDispenserCount = request.FourNozzleDispenserCount,
-            EquipmentInstalled = request.EquipmentInstalled,
-            Stage2PipingInsideDispensers = request.Stage2PipingInsideDispensers,
-            Stage2TestApproved = request.Stage2TestApproved,
-            PipeSlopeTowardTank = request.PipeSlopeTowardTank,
-            TrainingDate = request.TrainingDate,
-            Trainee1Name = request.Trainee1Name,
-            Trainee1NationalId = request.Trainee1NationalId,
-            Trainee2Name = request.Trainee2Name,
-            Trainee2NationalId = request.Trainee2NationalId,
-            Trainee3Name = request.Trainee3Name,
-            Trainee3NationalId = request.Trainee3NationalId,
-            Remarks = request.Remarks
+            UploadedFormFilePath = request.UploadedFormFilePath,
+            Description = request.Description
         };
         await _unitOfWork.Stage2DeliveryForms.AddAsync(form, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + request.StationId);
+        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + station.Id);
         var dto = _mapper.Map<Stage2DeliveryFormDto>(form);
         await _cache.StringSetAsync(CacheKeyByIdPrefix + dto.Id, dto.JsonSerialize(), _cacheExpirationTime);
         return dto;

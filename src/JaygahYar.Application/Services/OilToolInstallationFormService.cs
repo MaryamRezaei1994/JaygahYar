@@ -2,7 +2,6 @@ using AutoMapper;
 using JaygahYar.Application.Constants;
 using JaygahYar.Application.DTOs;
 using JaygahYar.Application.Interfaces;
-using JaygahYar.Domain.Common.Enums;
 using JaygahYar.Domain.Entities;
 using JaygahYar.Domain.Interfaces;
 using StackExchange.Redis;
@@ -31,7 +30,7 @@ public class OilToolInstallationFormService : IOilToolInstallationFormService
         var cached = await _cache.GetJsonAsync<OilToolInstallationFormDto>(CacheKeyByIdPrefix + id);
         if (cached != null) return cached;
 
-        var entity = await _unitOfWork.OilToolInstallationForms.GetByIdWithDispensersAsync(id, cancellationToken);
+        var entity = await _unitOfWork.OilToolInstallationForms.GetByIdAsync(id, cancellationToken);
         if (entity == null) return null;
         var dto = _mapper.Map<OilToolInstallationFormDto>(entity);
         await _cache.StringSetAsync(CacheKeyByIdPrefix + id, dto.JsonSerialize(), _cacheExpirationTime);
@@ -51,40 +50,39 @@ public class OilToolInstallationFormService : IOilToolInstallationFormService
 
     public async Task<OilToolInstallationFormDto> CreateAsync(CreateOilToolInstallationFormRequest request, CancellationToken cancellationToken = default)
     {
+        var station = await _unitOfWork.Stations.FindByNameOrMobileAsync(request.StationName, request.Mobile, cancellationToken);
+        if (station == null)
+        {
+            station = new Station
+            {
+                Name = request.StationName.Trim(),
+                Address = request.StationAddress,
+                Mobile = request.Mobile
+            };
+            await _unitOfWork.Stations.AddAsync(station, cancellationToken);
+        }
+        else
+        {
+            station.Address = request.StationAddress;
+            station.Mobile = request.Mobile;
+            await _unitOfWork.Stations.UpdateAsync(station, cancellationToken);
+        }
+
         var form = new OilToolInstallationForm
         {
             FormNumber = request.FormNumber,
-            FormCompletionDate = request.FormCompletionDate,
-            BuyerName = request.BuyerName,
-            StationId = request.StationId,
+            BuyerFullName = request.BuyerFullName,
+            StationId = station.Id,
             StationAddress = request.StationAddress,
             Mobile = request.Mobile,
             DeviceInstallationDate = request.DeviceInstallationDate,
             CommissioningDate = request.CommissioningDate,
-            FloatQuantity = request.FloatQuantity,
-            StationType = request.StationType.HasValue ? (StationType)request.StationType.Value : null,
-            ShutOffValveInstalledCorrectly = request.ShutOffValveInstalledCorrectly,
-            CheckValveInstalledForMotorized = request.CheckValveInstalledForMotorized,
-            SuitableGlandsForInputCables = request.SuitableGlandsForInputCables,
-            InstallerName = request.InstallerName
+            InstallationFormFilePath = request.InstallationFormFilePath,
+            PeymanegarTestFormFilePath = request.PeymanegarTestFormFilePath
         };
-        foreach (var item in request.DispenserItems)
-        {
-            form.DispenserItems.Add(new DispenserInstallationItem
-            {
-                RowNumber = item.RowNumber,
-                DispenserType = item.DispenserType,
-                NozzleCount = item.NozzleCount,
-                SerialNumber = item.SerialNumber,
-                FuelTypeA = item.FuelTypeA,
-                FuelTypeB = item.FuelTypeB,
-                CurrentPerformanceC = item.CurrentPerformanceC,
-                CurrentPerformanceD = item.CurrentPerformanceD
-            });
-        }
         await _unitOfWork.OilToolInstallationForms.AddAsync(form, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + request.StationId);
+        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + station.Id);
         var dto = _mapper.Map<OilToolInstallationFormDto>(form);
         await _cache.StringSetAsync(CacheKeyByIdPrefix + dto.Id, dto.JsonSerialize(), _cacheExpirationTime);
         return dto;
@@ -92,39 +90,18 @@ public class OilToolInstallationFormService : IOilToolInstallationFormService
 
     public async Task<OilToolInstallationFormDto?> UpdateAsync(Guid id, UpdateOilToolInstallationFormRequest request, CancellationToken cancellationToken = default)
     {
-        var form = await _unitOfWork.OilToolInstallationForms.GetByIdWithDispensersAsync(id, cancellationToken);
+        var form = await _unitOfWork.OilToolInstallationForms.GetByIdAsync(id, cancellationToken);
         if (form == null) return null;
 
         form.FormNumber = request.FormNumber;
-        form.FormCompletionDate = request.FormCompletionDate;
-        form.BuyerName = request.BuyerName;
+        form.BuyerFullName = request.BuyerFullName;
         form.StationAddress = request.StationAddress;
         form.Mobile = request.Mobile;
         form.DeviceInstallationDate = request.DeviceInstallationDate;
         form.CommissioningDate = request.CommissioningDate;
-        form.FloatQuantity = request.FloatQuantity;
-        form.StationType = request.StationType.HasValue ? (StationType)request.StationType.Value : null;
-        form.ShutOffValveInstalledCorrectly = request.ShutOffValveInstalledCorrectly;
-        form.CheckValveInstalledForMotorized = request.CheckValveInstalledForMotorized;
-        form.SuitableGlandsForInputCables = request.SuitableGlandsForInputCables;
-        form.InstallerName = request.InstallerName;
+        form.InstallationFormFilePath = request.InstallationFormFilePath;
+        form.PeymanegarTestFormFilePath = request.PeymanegarTestFormFilePath;
         form.UpdatedAt = DateTime.UtcNow;
-
-        form.DispenserItems.Clear();
-        foreach (var item in request.DispenserItems)
-        {
-            form.DispenserItems.Add(new DispenserInstallationItem
-            {
-                RowNumber = item.RowNumber,
-                DispenserType = item.DispenserType,
-                NozzleCount = item.NozzleCount,
-                SerialNumber = item.SerialNumber,
-                FuelTypeA = item.FuelTypeA,
-                FuelTypeB = item.FuelTypeB,
-                CurrentPerformanceC = item.CurrentPerformanceC,
-                CurrentPerformanceD = item.CurrentPerformanceD
-            });
-        }
         await _unitOfWork.OilToolInstallationForms.UpdateAsync(form, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _cache.KeyDeleteAsync(CacheKeyByIdPrefix + id);

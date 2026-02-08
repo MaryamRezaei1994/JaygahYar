@@ -10,9 +10,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Station> Stations => Set<Station>();
     public DbSet<OilToolInstallationForm> OilToolInstallationForms => Set<OilToolInstallationForm>();
-    public DbSet<DispenserInstallationItem> DispenserInstallationItems => Set<DispenserInstallationItem>();
     public DbSet<TankMonitoringInstallationForm> TankMonitoringInstallationForms => Set<TankMonitoringInstallationForm>();
-    public DbSet<ProbeItem> ProbeItems => Set<ProbeItem>();
     public DbSet<AfterSalesServiceReport> AfterSalesServiceReports => Set<AfterSalesServiceReport>();
     public DbSet<ServiceReportItem> ServiceReportItems => Set<ServiceReportItem>();
     public DbSet<Stage2DeliveryForm> Stage2DeliveryForms => Set<Stage2DeliveryForm>();
@@ -35,19 +33,13 @@ public class ApplicationDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.HasOne(x => x.Station).WithMany(x => x.OilToolInstallations).HasForeignKey(x => x.StationId).OnDelete(DeleteBehavior.Restrict);
-            e.HasMany(x => x.DispenserItems).WithOne(x => x.OilToolInstallationForm).HasForeignKey(x => x.OilToolInstallationFormId).OnDelete(DeleteBehavior.Cascade);
         });
-
-        modelBuilder.Entity<DispenserInstallationItem>(e => e.HasKey(x => x.Id));
 
         modelBuilder.Entity<TankMonitoringInstallationForm>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasOne(x => x.Station).WithMany(x => x.TankMonitoringInstallations).HasForeignKey(x => x.StationId).OnDelete(DeleteBehavior.Restrict);
-            e.HasMany(x => x.ProbeItems).WithOne(x => x.TankMonitoringInstallationForm).HasForeignKey(x => x.TankMonitoringInstallationFormId).OnDelete(DeleteBehavior.Cascade);
         });
-
-        modelBuilder.Entity<ProbeItem>(e => e.HasKey(x => x.Id));
 
         modelBuilder.Entity<AfterSalesServiceReport>(e =>
         {

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JaygahYar.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260207053101_InitialMig")]
-    partial class InitialMig
+    [Migration("20260208054639_UpdateFormsToUploadBased")]
+    partial class UpdateFormsToUploadBased
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -170,121 +170,47 @@ namespace JaygahYar.Infrastructure.Migrations
                     b.ToTable("AfterSalesServiceReports", "JaygahYar");
                 });
 
-            modelBuilder.Entity("JaygahYar.Domain.Entities.DispenserInstallationItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("CurrentPerformanceC")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("CurrentPerformanceD")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("DispenserType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FuelTypeA")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FuelTypeB")
-                        .HasColumnType("text");
-
-                    b.Property<int>("NozzleCount")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("OilToolInstallationFormId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("RowNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SerialNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OilToolInstallationFormId");
-
-                    b.ToTable("DispenserInstallationItems", "JaygahYar");
-                });
-
             modelBuilder.Entity("JaygahYar.Domain.Entities.OilToolInstallationForm", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BuyerName")
+                    b.Property<string>("BuyerFullName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("CheckValveInstalledForMotorized")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("CommissioningDate")
+                    b.Property<DateTime>("CommissioningDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DeviceInstallationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("FloatQuantity")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("FormCompletionDate")
+                    b.Property<DateTime>("DeviceInstallationDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FormNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("InstallerName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InstallerSignature")
+                    b.Property<string>("InstallationFormFilePath")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Mobile")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("RepresentativeSignature")
+                    b.Property<string>("PeymanegarTestFormFilePath")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("RepresentativeStamp")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("ShutOffValveInstalledCorrectly")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("StationAddress")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("StationId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("StationOwnerSignature")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationOwnerStamp")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("StationType")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("SuitableGlandsForInputCables")
-                        .HasColumnType("boolean");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -294,49 +220,6 @@ namespace JaygahYar.Infrastructure.Migrations
                     b.HasIndex("StationId");
 
                     b.ToTable("OilToolInstallationForms", "JaygahYar");
-                });
-
-            modelBuilder.Entity("JaygahYar.Domain.Entities.ProbeItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FuelType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProbeSerialNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProbeType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Remarks")
-                        .HasColumnType("text");
-
-                    b.Property<int>("RowNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TankMonitoringInstallationFormId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TankNumber")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TankMonitoringInstallationFormId");
-
-                    b.ToTable("ProbeItems", "JaygahYar");
                 });
 
             modelBuilder.Entity("JaygahYar.Domain.Entities.ServiceReportItem", b =>
@@ -392,138 +275,47 @@ namespace JaygahYar.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BrandCompanyStamp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CompanyBrand")
+                    b.Property<string>("BuyerFullName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CustomerName")
+                    b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CutoffCount")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("DeviceCommissioningDate")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeliveryAddress")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("DeliveryDate")
+                    b.Property<DateTime>("DeviceInstallationDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DispenserManufacturer")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("DispenserModel")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("DualWallHoseCount")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("EquipmentInstalled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("FormDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FormNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("FourNozzleDispenserCount")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("HasReceivedItems")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool?>("MotorThreePhase")
-                        .HasColumnType("boolean");
-
-                    b.Property<int?>("NozzleCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Phone")
+                    b.Property<string>("Mobile")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("PipeSlopeTowardTank")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Remarks")
+                    b.Property<string>("StationAddress")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("RepresentativeSignature")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Revision")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SendDate")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("SeparatorCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("SingleNozzleDispenserCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("SinglePhaseMotorCount")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("Stage2PipingInsideDispensers")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Stage2TestApproved")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid>("StationId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("StationManagerSignature")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationOwnerName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationStamp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee1Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee1NationalId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee2Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee2NationalId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee3Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee3NationalId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("TrainingDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("TwoNozzleDispenserCount")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("VacuumPumpCount")
-                        .HasColumnType("integer");
+                    b.Property<string>("UploadedFormFilePath")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -538,156 +330,51 @@ namespace JaygahYar.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Address")
+                    b.Property<string>("BuyerFullName")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("BrandCompanyStamp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CompanyBrand")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("CompressorHasOil")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal?>("CompressorMaxCurrentAmpere")
-                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CustomerName")
+                    b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeliveryCommissioningDate")
+                    b.Property<DateTime>("DeviceCommissioningDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeviceInstallationDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DeviceModel")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DeviceSerialNumber")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("DipHatchGasTightChecked")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("DrainHoseCapGasTightChecked")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("FlameArresterInstalled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("FormDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FormNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal?>("HPGaugePressureAfterStart")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("HPGaugePressureBeforeStart")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("HasStage2Commissioning")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal?>("InitialTemperature")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("IsCommissioning")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDelivery")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal?>("LPGaugePressureAfterStart")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("LPGaugePressureBeforeStart")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("ManualTakeoffBlockerInstalled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("PVCalibrationCertificateOnCollector")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("PVValvesOperationChecked")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Phone")
+                    b.Property<string>("Mobile")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Remarks")
+                    b.Property<string>("StationAddress")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("RepresentativeSignature")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Revision")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("SecondaryTemperatureMin")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("SendDate")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("StationGroundToDeviceChecked")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid>("StationId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("StationManagerSignature")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationOwnerName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationStamp")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("ThermometerOffTempC")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("ThermometerOnTempC")
-                        .HasColumnType("numeric");
-
-                    b.Property<int?>("TimeToSecondaryTempMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Trainee1Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee1NationalId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee2Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee2NationalId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee3Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Trainee3NationalId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("TrainingDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("VaporInletOutletValvesChecked")
-                        .HasColumnType("boolean");
+                    b.Property<string>("UploadedFormFilePath")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -744,103 +431,51 @@ namespace JaygahYar.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("AuthorizedRepresentativeName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AuthorizedRepresentativeSignature")
-                        .HasColumnType("text");
-
                     b.Property<string>("BuyerFullName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("CableEntryGasTight")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("ConsoleGroundAndProtectionUsed")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DeviceCommissioningDate")
+                    b.Property<DateTime>("DeviceCommissioningDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DeviceInstallationDate")
+                    b.Property<DateTime>("DeviceInstallationDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeviceType")
+                    b.Property<string>("DeviceModel")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("DieselTankCount")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("DisplayPowerInstalledCorrectly")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("DisplaySerialNumber")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("FloatsInstalledCorrectly")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("FormDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FormNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("GasolineTankCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("JaygahYarManagementName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("JaygahYarManagementSignature")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("JunctionBoxInstalledCorrectly")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Mobile")
+                        .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("PowerSerialNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("ProbesInstalledCorrectly")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("SoftwarePurchased")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("SoftwareSetupPerformed")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("StationAddress")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("StationId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("StationManagerName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StationManagerSignature")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("SuitableCableUsed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("TankInfoMatchesDipstick")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("TrainingProvided")
-                        .HasColumnType("boolean");
+                    b.Property<int>("TankCount")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UploadedFormFilePath")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -860,17 +495,6 @@ namespace JaygahYar.Infrastructure.Migrations
                     b.Navigation("Station");
                 });
 
-            modelBuilder.Entity("JaygahYar.Domain.Entities.DispenserInstallationItem", b =>
-                {
-                    b.HasOne("JaygahYar.Domain.Entities.OilToolInstallationForm", "OilToolInstallationForm")
-                        .WithMany("DispenserItems")
-                        .HasForeignKey("OilToolInstallationFormId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OilToolInstallationForm");
-                });
-
             modelBuilder.Entity("JaygahYar.Domain.Entities.OilToolInstallationForm", b =>
                 {
                     b.HasOne("JaygahYar.Domain.Entities.Station", "Station")
@@ -880,17 +504,6 @@ namespace JaygahYar.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Station");
-                });
-
-            modelBuilder.Entity("JaygahYar.Domain.Entities.ProbeItem", b =>
-                {
-                    b.HasOne("JaygahYar.Domain.Entities.TankMonitoringInstallationForm", "TankMonitoringInstallationForm")
-                        .WithMany("ProbeItems")
-                        .HasForeignKey("TankMonitoringInstallationFormId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TankMonitoringInstallationForm");
                 });
 
             modelBuilder.Entity("JaygahYar.Domain.Entities.ServiceReportItem", b =>
@@ -942,11 +555,6 @@ namespace JaygahYar.Infrastructure.Migrations
                     b.Navigation("ServiceItems");
                 });
 
-            modelBuilder.Entity("JaygahYar.Domain.Entities.OilToolInstallationForm", b =>
-                {
-                    b.Navigation("DispenserItems");
-                });
-
             modelBuilder.Entity("JaygahYar.Domain.Entities.Station", b =>
                 {
                     b.Navigation("AfterSalesReports");
@@ -958,11 +566,6 @@ namespace JaygahYar.Infrastructure.Migrations
                     b.Navigation("Stage3DeliveryForms");
 
                     b.Navigation("TankMonitoringInstallations");
-                });
-
-            modelBuilder.Entity("JaygahYar.Domain.Entities.TankMonitoringInstallationForm", b =>
-                {
-                    b.Navigation("ProbeItems");
                 });
 #pragma warning restore 612, 618
         }

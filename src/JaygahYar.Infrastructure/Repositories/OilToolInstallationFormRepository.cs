@@ -14,20 +14,13 @@ public class OilToolInstallationFormRepository : IOilToolInstallationFormReposit
     public async Task<OilToolInstallationForm?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => await _context.OilToolInstallationForms.FindAsync([id], cancellationToken);
 
-    public async Task<OilToolInstallationForm?> GetByIdWithDispensersAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _context.OilToolInstallationForms
-            .Include(x => x.Station)
-            .Include(x => x.DispenserItems)
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
     public async Task<IReadOnlyList<OilToolInstallationForm>> GetByStationIdAsync(Guid stationId, CancellationToken cancellationToken = default)
         => await _context.OilToolInstallationForms
-            .Include(x => x.DispenserItems)
             .Where(x => x.StationId == stationId)
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<OilToolInstallationForm>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _context.OilToolInstallationForms.Include(x => x.DispenserItems).ToListAsync(cancellationToken);
+        => await _context.OilToolInstallationForms.ToListAsync(cancellationToken);
 
     public async Task<OilToolInstallationForm> AddAsync(OilToolInstallationForm entity, CancellationToken cancellationToken = default)
     {

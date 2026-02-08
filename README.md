@@ -15,11 +15,11 @@ JaygahYar یک API برای مدیریت اطلاعات جایگاه‌های س
 | ماژول | توضیح |
 |--------|--------|
 | **جایگاه (Station)** | مدیریت جایگاه‌های سوخت (نام، آدرس، تلفن، تعداد مخازن بنزین/نفت‌گاز) |
-| **فرم نصب نفت‌ابزار** | ثبت نصب دیسپنسرها و چک‌لیست نصب (شات‌آف والو، چک والو، گلند و ...) |
-| **فرم مانیتورینگ مخازن** | نصب سیستم مانیتورینگ مخازن با پراب‌ها و چک‌لیست راه‌اندازی |
+| **فرم نصب نفت‌ابزار** | ثبت اطلاعات فرم + **آپلود فایل‌های فرم نصب** و **فرم آزمایش پیمانه‌گر** |
+| **فرم مانیتورینگ مخازن** | ثبت اطلاعات فرم + **آپلود فایل فرم نصب/راه‌اندازی تانک مانیتورینگ** |
 | **گزارش خدمات پس از فروش** | ثبت سرویس، قطعات، اقدامات ایمنی و هزینه‌ها |
-| **فرم تحویل استیج ۲** | تحویل/راه‌اندازی تجهیزات جمع‌آوری بخار (STAGE II) |
-| **فرم تحویل استیج ۳** | تحویل/راه‌اندازی دستگاه بازیافت بخار VRU (STAGE III) |
+| **فرم تحویل استیج ۲** | ثبت اطلاعات فرم + **آپلود فایل فرم تحویل/راه‌اندازی کهاب استیج ۲** |
+| **فرم تحویل استیج ۳** | ثبت اطلاعات فرم + **آپلود فایل فرم تحویل/راه‌اندازی کهاب استیج ۳** |
 
 ---
 
@@ -132,6 +132,16 @@ dotnet run --project src/JaygahYar.WebAPI/JaygahYar.WebAPI.csproj
 
 ---
 
+## آپلود فایل فرم‌ها (طبق UI جدید)
+
+در نسخه جدید فرم‌ها، endpointهای ایجاد فرم‌ها به صورت `multipart/form-data` هستند و فایل‌ها روی سرور ذخیره می‌شوند.
+
+- **حداکثر سایز فایل**: 128MB
+- **محل ذخیره فایل‌ها**: داخل `src/JaygahYar.WebAPI` در مسیر `uploadDoc/<category>/...`
+- **آنچه در دیتابیس ذخیره می‌شود**: مسیر نسبی فایل (مثل `uploadDoc/oiltool/<guid>_file.pdf`)
+
+> در Swagger هم می‌توانید این endpointها را با انتخاب نوع `multipart/form-data` تست کنید.
+
 ## پیکربندی
 
 ### تنظیم Environment (الگوی Survey)
@@ -176,10 +186,14 @@ dotnet run --project src/JaygahYar.WebAPI/JaygahYar.WebAPI.csproj
 | `GET/POST/PUT/DELETE /api/Stations` | CRUD جایگاه |
 | `GET/POST /api/Stations/{id}` | جزئیات و ایجاد جایگاه |
 | `GET /api/OilToolInstallationForms/station/{stationId}` | فرم‌های نصب نفت‌ابزار یک جایگاه |
+| `POST /api/OilToolInstallationForms` | ایجاد فرم نصب نفت‌ابزار (multipart/form-data + 2 فایل) |
 | `GET /api/TankMonitoringInstallationForms/station/{stationId}` | فرم‌های مانیتورینگ مخازن یک جایگاه |
+| `POST /api/TankMonitoringInstallationForms` | ایجاد فرم تانک مانیتورینگ (multipart/form-data + 1 فایل) |
 | `GET /api/AfterSalesServiceReports/station/{stationId}` | گزارش‌های پس از فروش یک جایگاه |
 | `GET /api/Stage2DeliveryForms/station/{stationId}` | فرم‌های تحویل استیج ۲ یک جایگاه |
+| `POST /api/Stage2DeliveryForms` | ایجاد فرم استیج ۲ (multipart/form-data + 1 فایل) |
 | `GET /api/Stage3DeliveryForms/station/{stationId}` | فرم‌های تحویل استیج ۳ یک جایگاه |
+| `POST /api/Stage3DeliveryForms` | ایجاد فرم استیج ۳ (multipart/form-data + 1 فایل) |
 
 مستندات کامل و امتحان درخواست‌ها در **Swagger** موجود است.
 

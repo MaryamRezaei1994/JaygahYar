@@ -30,7 +30,7 @@ public class TankMonitoringInstallationFormService : ITankMonitoringInstallation
         var cached = await _cache.GetJsonAsync<TankMonitoringInstallationFormDto>(CacheKeyByIdPrefix + id);
         if (cached != null) return cached;
 
-        var entity = await _unitOfWork.TankMonitoringInstallationForms.GetByIdWithProbesAsync(id, cancellationToken);
+        var entity = await _unitOfWork.TankMonitoringInstallationForms.GetByIdAsync(id, cancellationToken);
         if (entity == null) return null;
         var dto = _mapper.Map<TankMonitoringInstallationFormDto>(entity);
         await _cache.StringSetAsync(CacheKeyByIdPrefix + id, dto.JsonSerialize(), _cacheExpirationTime);
@@ -50,49 +50,41 @@ public class TankMonitoringInstallationFormService : ITankMonitoringInstallation
 
     public async Task<TankMonitoringInstallationFormDto> CreateAsync(CreateTankMonitoringInstallationFormRequest request, CancellationToken cancellationToken = default)
     {
+        var station = await _unitOfWork.Stations.FindByNameOrMobileAsync(request.StationName, request.Mobile, cancellationToken);
+        if (station == null)
+        {
+            station = new Station
+            {
+                Name = request.StationName.Trim(),
+                Address = request.StationAddress,
+                Mobile = request.Mobile
+            };
+            await _unitOfWork.Stations.AddAsync(station, cancellationToken);
+        }
+        else
+        {
+            station.Address = request.StationAddress;
+            station.Mobile = request.Mobile;
+            await _unitOfWork.Stations.UpdateAsync(station, cancellationToken);
+        }
+
         var form = new TankMonitoringInstallationForm
         {
             FormNumber = request.FormNumber,
-            FormDate = request.FormDate,
             BuyerFullName = request.BuyerFullName,
-            StationId = request.StationId,
             StationAddress = request.StationAddress,
             Mobile = request.Mobile,
-            GasolineTankCount = request.GasolineTankCount,
-            DieselTankCount = request.DieselTankCount,
+            StationId = station.Id,
+            TankCount = request.TankCount,
+            DeviceModel = request.DeviceModel,
+            DisplaySerialNumber = request.DisplaySerialNumber,
             DeviceInstallationDate = request.DeviceInstallationDate,
             DeviceCommissioningDate = request.DeviceCommissioningDate,
-            DeviceType = request.DeviceType,
-            DisplaySerialNumber = request.DisplaySerialNumber,
-            PowerSerialNumber = request.PowerSerialNumber,
-            DisplayPowerInstalledCorrectly = request.DisplayPowerInstalledCorrectly,
-            SuitableCableUsed = request.SuitableCableUsed,
-            ProbesInstalledCorrectly = request.ProbesInstalledCorrectly,
-            JunctionBoxInstalledCorrectly = request.JunctionBoxInstalledCorrectly,
-            CableEntryGasTight = request.CableEntryGasTight,
-            FloatsInstalledCorrectly = request.FloatsInstalledCorrectly,
-            ConsoleGroundAndProtectionUsed = request.ConsoleGroundAndProtectionUsed,
-            SoftwarePurchased = request.SoftwarePurchased,
-            SoftwareSetupPerformed = request.SoftwareSetupPerformed,
-            TankInfoMatchesDipstick = request.TankInfoMatchesDipstick,
-            TrainingProvided = request.TrainingProvided,
-            StationManagerName = request.StationManagerName
+            UploadedFormFilePath = request.UploadedFormFilePath
         };
-        foreach (var item in request.ProbeItems)
-        {
-            form.ProbeItems.Add(new ProbeItem
-            {
-                RowNumber = item.RowNumber,
-                ProbeType = item.ProbeType,
-                ProbeSerialNumber = item.ProbeSerialNumber,
-                FuelType = item.FuelType,
-                TankNumber = item.TankNumber,
-                Remarks = item.Remarks
-            });
-        }
         await _unitOfWork.TankMonitoringInstallationForms.AddAsync(form, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + request.StationId);
+        await _cache.KeyDeleteAsync(CacheKeyByStationPrefix + station.Id);
         var dto = _mapper.Map<TankMonitoringInstallationFormDto>(form);
         await _cache.StringSetAsync(CacheKeyByIdPrefix + dto.Id, dto.JsonSerialize(), _cacheExpirationTime);
         return dto;

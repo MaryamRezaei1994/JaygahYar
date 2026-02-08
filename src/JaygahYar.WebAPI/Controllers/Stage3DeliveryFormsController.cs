@@ -1,5 +1,7 @@
 using JaygahYar.Application.DTOs;
 using JaygahYar.Application.Interfaces;
+using JaygahYar.WebAPI.Helpers;
+using JaygahYar.WebAPI.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JaygahYar.WebAPI.Controllers;
@@ -9,8 +11,13 @@ namespace JaygahYar.WebAPI.Controllers;
 public class Stage3DeliveryFormsController : ControllerBase
 {
     private readonly IStage3DeliveryFormService _service;
+    private readonly IWebHostEnvironment _env;
 
-    public Stage3DeliveryFormsController(IStage3DeliveryFormService service) => _service = service;
+    public Stage3DeliveryFormsController(IStage3DeliveryFormService service, IWebHostEnvironment env)
+    {
+        _service = service;
+        _env = env;
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Stage3DeliveryFormDto>> GetById(Guid id, CancellationToken cancellationToken)
@@ -27,9 +34,31 @@ public class Stage3DeliveryFormsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Stage3DeliveryFormDto>> Create([FromBody] CreateStage3DeliveryFormRequest request, CancellationToken cancellationToken)
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(134_217_728)] // 128MB
+    public async Task<ActionResult<Stage3DeliveryFormDto>> Create([FromForm] Stage3DeliveryFormCreateFormRequest request, CancellationToken cancellationToken)
     {
-        var dto = await _service.CreateAsync(request, cancellationToken);
+        var uploadedPath = await UploadFileHelper.SaveAsync(
+            request.UploadedFormFile,
+            _env.ContentRootPath,
+            "stage3",
+            cancellationToken);
+
+        var appRequest = new CreateStage3DeliveryFormRequest(
+            request.FormNumber,
+            request.StationName,
+            request.BuyerFullName,
+            request.StationAddress,
+            request.Mobile,
+            request.DeviceInstallationDate,
+            request.DeviceCommissioningDate,
+            request.DeviceModel,
+            request.DeviceSerialNumber,
+            uploadedPath,
+            request.Description
+        );
+
+        var dto = await _service.CreateAsync(appRequest, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
     }
 

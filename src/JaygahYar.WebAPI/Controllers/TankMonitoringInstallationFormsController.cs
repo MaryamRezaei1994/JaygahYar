@@ -1,5 +1,7 @@
 using JaygahYar.Application.DTOs;
 using JaygahYar.Application.Interfaces;
+using JaygahYar.WebAPI.Helpers;
+using JaygahYar.WebAPI.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JaygahYar.WebAPI.Controllers;
@@ -9,8 +11,13 @@ namespace JaygahYar.WebAPI.Controllers;
 public class TankMonitoringInstallationFormsController : ControllerBase
 {
     private readonly ITankMonitoringInstallationFormService _service;
+    private readonly IWebHostEnvironment _env;
 
-    public TankMonitoringInstallationFormsController(ITankMonitoringInstallationFormService service) => _service = service;
+    public TankMonitoringInstallationFormsController(ITankMonitoringInstallationFormService service, IWebHostEnvironment env)
+    {
+        _service = service;
+        _env = env;
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TankMonitoringInstallationFormDto>> GetById(Guid id, CancellationToken cancellationToken)
@@ -27,9 +34,31 @@ public class TankMonitoringInstallationFormsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<TankMonitoringInstallationFormDto>> Create([FromBody] CreateTankMonitoringInstallationFormRequest request, CancellationToken cancellationToken)
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(134_217_728)] // 128MB
+    public async Task<ActionResult<TankMonitoringInstallationFormDto>> Create([FromForm] TankMonitoringInstallationFormCreateFormRequest request, CancellationToken cancellationToken)
     {
-        var dto = await _service.CreateAsync(request, cancellationToken);
+        var uploadedPath = await UploadFileHelper.SaveAsync(
+            request.UploadedFormFile,
+            _env.ContentRootPath,
+            "tank-monitoring",
+            cancellationToken);
+
+        var appRequest = new CreateTankMonitoringInstallationFormRequest(
+            request.FormNumber,
+            request.BuyerFullName,
+            request.StationName,
+            request.StationAddress,
+            request.Mobile,
+            request.TankCount,
+            request.DeviceModel,
+            request.DisplaySerialNumber,
+            request.DeviceInstallationDate,
+            request.DeviceCommissioningDate,
+            uploadedPath
+        );
+
+        var dto = await _service.CreateAsync(appRequest, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
     }
 

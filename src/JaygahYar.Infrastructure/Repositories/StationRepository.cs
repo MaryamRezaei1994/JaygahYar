@@ -16,8 +16,8 @@ public class StationRepository : IStationRepository
 
     public async Task<Station?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
         => await _context.Stations
-            .Include(x => x.OilToolInstallations).ThenInclude(x => x.DispenserItems)
-            .Include(x => x.TankMonitoringInstallations).ThenInclude(x => x.ProbeItems)
+            .Include(x => x.OilToolInstallations)
+            .Include(x => x.TankMonitoringInstallations)
             .Include(x => x.AfterSalesReports).ThenInclude(x => x.ServiceItems)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
@@ -44,4 +44,12 @@ public class StationRepository : IStationRepository
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         => await _context.Stations.AnyAsync(x => x.Id == id, cancellationToken);
+
+    public async Task<Station?> FindByNameOrMobileAsync(string stationName, string mobile, CancellationToken cancellationToken = default)
+    {
+        stationName = stationName.Trim();
+        mobile = mobile.Trim();
+        return await _context.Stations
+            .FirstOrDefaultAsync(x => x.Name == stationName || (x.Mobile != null && x.Mobile == mobile), cancellationToken);
+    }
 }

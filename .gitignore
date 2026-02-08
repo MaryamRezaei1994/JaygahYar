@@ -49,6 +49,9 @@ artifacts/
 publish/
 *.Publish.xml
 
+# Uploaded documents (local runtime files)
+src/JaygahYar.WebAPI/uploadDoc/
+
 # Secrets
 appsettings.*.json
 !appsettings.json
