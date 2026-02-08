@@ -12,7 +12,7 @@ public class StationRepository : IStationRepository
     public StationRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<Station?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _context.Stations.FindAsync([id], cancellationToken);
+        => await _context.Stations.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<Station?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
         => await _context.Stations
@@ -38,7 +38,8 @@ public class StationRepository : IStationRepository
 
     public Task DeleteAsync(Station entity, CancellationToken cancellationToken = default)
     {
-        _context.Stations.Remove(entity);
+        entity.IsDeleted = true;
+        _context.Stations.Update(entity);
         return Task.CompletedTask;
     }
 

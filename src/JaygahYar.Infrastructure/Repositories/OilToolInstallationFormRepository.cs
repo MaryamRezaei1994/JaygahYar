@@ -12,7 +12,7 @@ public class OilToolInstallationFormRepository : IOilToolInstallationFormReposit
     public OilToolInstallationFormRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<OilToolInstallationForm?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _context.OilToolInstallationForms.FindAsync([id], cancellationToken);
+        => await _context.OilToolInstallationForms.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<OilToolInstallationForm>> GetByStationIdAsync(Guid stationId, CancellationToken cancellationToken = default)
         => await _context.OilToolInstallationForms
@@ -36,7 +36,8 @@ public class OilToolInstallationFormRepository : IOilToolInstallationFormReposit
 
     public Task DeleteAsync(OilToolInstallationForm entity, CancellationToken cancellationToken = default)
     {
-        _context.OilToolInstallationForms.Remove(entity);
+        entity.IsDeleted = true;
+        _context.OilToolInstallationForms.Update(entity);
         return Task.CompletedTask;
     }
 }

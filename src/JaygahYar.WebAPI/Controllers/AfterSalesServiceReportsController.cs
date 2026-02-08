@@ -30,7 +30,7 @@ public class AfterSalesServiceReportsController : ControllerBase
     public async Task<ActionResult<AfterSalesServiceReportDto>> Create([FromBody] CreateAfterSalesServiceReportRequest request, CancellationToken cancellationToken)
     {
         var dto = await _service.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+        return Ok(dto);
     }
 
     [HttpDelete("{id:guid}")]

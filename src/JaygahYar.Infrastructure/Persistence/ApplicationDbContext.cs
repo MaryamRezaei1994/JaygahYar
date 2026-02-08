@@ -1,6 +1,7 @@
 using JaygahYar.Domain.Common;
 using JaygahYar.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace JaygahYar.Infrastructure.Persistence;
 
@@ -21,6 +22,21 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("JaygahYar");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Global filter for soft delete (BaseEntity.IsDeleted == false)
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var clrType = entityType.ClrType;
+            if (clrType == null) continue;
+            if (!typeof(BaseEntity).IsAssignableFrom(clrType)) continue;
+
+            var parameter = Expression.Parameter(clrType, "e");
+            var prop = Expression.Property(parameter, nameof(BaseEntity.IsDeleted));
+            var body = Expression.Equal(prop, Expression.Constant(false));
+            var lambda = Expression.Lambda(body, parameter);
+
+            modelBuilder.Entity(clrType).HasQueryFilter(lambda);
+        }
 
         modelBuilder.Entity<Station>(e =>
         {
@@ -67,8 +83,19 @@ public class ApplicationDbContext : DbContext
     {
         foreach (var entry in ChangeTracker.Entries())
         {
-            if (entry.State == EntityState.Modified && entry.Entity is BaseEntity entity)
+            if (entry.Entity is not BaseEntity entity) continue;
+
+            if (entry.State == EntityState.Deleted)
+            {
+                // Convert hard delete to soft delete
+                entry.State = EntityState.Modified;
+                entity.IsDeleted = true;
                 entity.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entity.UpdatedAt = DateTime.UtcNow;
+            }
         }
         return base.SaveChangesAsync(cancellationToken);
     }

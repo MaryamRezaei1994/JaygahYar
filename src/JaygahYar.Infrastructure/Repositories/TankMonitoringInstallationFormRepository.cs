@@ -12,7 +12,7 @@ public class TankMonitoringInstallationFormRepository : ITankMonitoringInstallat
     public TankMonitoringInstallationFormRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<TankMonitoringInstallationForm?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _context.TankMonitoringInstallationForms.FindAsync([id], cancellationToken);
+        => await _context.TankMonitoringInstallationForms.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<TankMonitoringInstallationForm>> GetByStationIdAsync(Guid stationId, CancellationToken cancellationToken = default)
         => await _context.TankMonitoringInstallationForms
@@ -36,7 +36,8 @@ public class TankMonitoringInstallationFormRepository : ITankMonitoringInstallat
 
     public Task DeleteAsync(TankMonitoringInstallationForm entity, CancellationToken cancellationToken = default)
     {
-        _context.TankMonitoringInstallationForms.Remove(entity);
+        entity.IsDeleted = true;
+        _context.TankMonitoringInstallationForms.Update(entity);
         return Task.CompletedTask;
     }
 }

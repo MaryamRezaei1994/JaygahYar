@@ -12,7 +12,7 @@ public class AfterSalesServiceReportRepository : IAfterSalesServiceReportReposit
     public AfterSalesServiceReportRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<AfterSalesServiceReport?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _context.AfterSalesServiceReports.FindAsync([id], cancellationToken);
+        => await _context.AfterSalesServiceReports.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<AfterSalesServiceReport?> GetByIdWithItemsAsync(Guid id, CancellationToken cancellationToken = default)
         => await _context.AfterSalesServiceReports
@@ -43,7 +43,8 @@ public class AfterSalesServiceReportRepository : IAfterSalesServiceReportReposit
 
     public Task DeleteAsync(AfterSalesServiceReport entity, CancellationToken cancellationToken = default)
     {
-        _context.AfterSalesServiceReports.Remove(entity);
+        entity.IsDeleted = true;
+        _context.AfterSalesServiceReports.Update(entity);
         return Task.CompletedTask;
     }
 }

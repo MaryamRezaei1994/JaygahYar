@@ -4,6 +4,7 @@ using JaygahYar.Domain.Configuration;
 using Microsoft.EntityFrameworkCore;
 using JaygahYar.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http.Features;
+using JaygahYar.WebAPI.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 // --------------------------------------------------
 ConfigurationData.Config(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add(new DuplicateNameExceptionFilter());
+});
 builder.Services.AddMemoryCache();
 builder.Services.Configure<FormOptions>(options =>
 {

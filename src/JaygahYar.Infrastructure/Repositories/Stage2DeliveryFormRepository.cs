@@ -12,7 +12,7 @@ public class Stage2DeliveryFormRepository : IStage2DeliveryFormRepository
     public Stage2DeliveryFormRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<Stage2DeliveryForm?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _context.Stage2DeliveryForms.FindAsync([id], cancellationToken);
+        => await _context.Stage2DeliveryForms.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<Stage2DeliveryForm>> GetByStationIdAsync(Guid stationId, CancellationToken cancellationToken = default)
         => await _context.Stage2DeliveryForms.Where(x => x.StationId == stationId).ToListAsync(cancellationToken);
@@ -34,7 +34,8 @@ public class Stage2DeliveryFormRepository : IStage2DeliveryFormRepository
 
     public Task DeleteAsync(Stage2DeliveryForm entity, CancellationToken cancellationToken = default)
     {
-        _context.Stage2DeliveryForms.Remove(entity);
+        entity.IsDeleted = true;
+        _context.Stage2DeliveryForms.Update(entity);
         return Task.CompletedTask;
     }
 }

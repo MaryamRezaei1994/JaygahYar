@@ -58,7 +58,7 @@ public class Stage2DeliveryFormsController : ControllerBase
         );
 
         var dto = await _service.CreateAsync(appRequest, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+        return Ok(dto);
     }
 
     [HttpDelete("{id:guid}")]

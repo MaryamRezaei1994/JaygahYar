@@ -12,7 +12,7 @@ public class Stage3DeliveryFormRepository : IStage3DeliveryFormRepository
     public Stage3DeliveryFormRepository(ApplicationDbContext context) => _context = context;
 
     public async Task<Stage3DeliveryForm?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _context.Stage3DeliveryForms.FindAsync([id], cancellationToken);
+        => await _context.Stage3DeliveryForms.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<Stage3DeliveryForm>> GetByStationIdAsync(Guid stationId, CancellationToken cancellationToken = default)
         => await _context.Stage3DeliveryForms.Where(x => x.StationId == stationId).ToListAsync(cancellationToken);
@@ -34,7 +34,8 @@ public class Stage3DeliveryFormRepository : IStage3DeliveryFormRepository
 
     public Task DeleteAsync(Stage3DeliveryForm entity, CancellationToken cancellationToken = default)
     {
-        _context.Stage3DeliveryForms.Remove(entity);
+        entity.IsDeleted = true;
+        _context.Stage3DeliveryForms.Update(entity);
         return Task.CompletedTask;
     }
 }
