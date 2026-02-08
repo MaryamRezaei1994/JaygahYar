@@ -1,4 +1,5 @@
 using JaygahYar.Application.DTOs;
+using JaygahYar.Application.Exceptions;
 using JaygahYar.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,15 +30,39 @@ public class StationsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<StationDto>> Create([FromBody] CreateStationRequest request, CancellationToken cancellationToken)
     {
-        var dto = await _stationService.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+        try
+        {
+            var dto = await _stationService.CreateAsync(request, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+        }
+        catch (DuplicateNameException ex)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Duplicate name",
+                Detail = ex.Message,
+                Status = StatusCodes.Status409Conflict
+            });
+        }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<StationDto>> Update(Guid id, [FromBody] UpdateStationRequest request, CancellationToken cancellationToken)
     {
-        var dto = await _stationService.UpdateAsync(id, request, cancellationToken);
-        return dto == null ? NotFound() : Ok(dto);
+        try
+        {
+            var dto = await _stationService.UpdateAsync(id, request, cancellationToken);
+            return dto == null ? NotFound() : Ok(dto);
+        }
+        catch (DuplicateNameException ex)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Duplicate name",
+                Detail = ex.Message,
+                Status = StatusCodes.Status409Conflict
+            });
+        }
     }
 
     [HttpDelete("{id:guid}")]

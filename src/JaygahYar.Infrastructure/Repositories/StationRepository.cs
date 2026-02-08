@@ -52,4 +52,12 @@ public class StationRepository : IStationRepository
         return await _context.Stations
             .FirstOrDefaultAsync(x => x.Name == stationName || (x.Mobile != null && x.Mobile == mobile), cancellationToken);
     }
+
+    public async Task<bool> NameExistsAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    {
+        name = name.Trim();
+        if (excludeId.HasValue)
+            return await _context.Stations.AnyAsync(x => x.Id != excludeId.Value && x.Name == name, cancellationToken);
+        return await _context.Stations.AnyAsync(x => x.Name == name, cancellationToken);
+    }
 }

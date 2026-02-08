@@ -1,6 +1,7 @@
 using AutoMapper;
 using JaygahYar.Application.Constants;
 using JaygahYar.Application.DTOs;
+using JaygahYar.Application.Exceptions;
 using JaygahYar.Application.Interfaces;
 using JaygahYar.Domain.Entities;
 using JaygahYar.Domain.Interfaces;
@@ -51,7 +52,12 @@ public class StationService : IStationService
 
     public async Task<StationDto> CreateAsync(CreateStationRequest request, CancellationToken cancellationToken = default)
     {
+        var normalizedName = request.Name.Trim();
+        if (await _unitOfWork.Stations.NameExistsAsync(normalizedName, excludeId: null, cancellationToken))
+            throw new DuplicateNameException($"Station name '{normalizedName}' already exists.");
+
         var entity = _mapper.Map<Station>(request);
+        entity.Name = normalizedName;
         await _unitOfWork.Stations.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _cache.KeyDeleteAsync(CacheKeyStationsList);
@@ -64,7 +70,12 @@ public class StationService : IStationService
     {
         var entity = await _unitOfWork.Stations.GetByIdAsync(id, cancellationToken);
         if (entity == null) return null;
-        entity.Name = request.Name;
+
+        var normalizedName = request.Name.Trim();
+        if (await _unitOfWork.Stations.NameExistsAsync(normalizedName, excludeId: id, cancellationToken))
+            throw new DuplicateNameException($"Station name '{normalizedName}' already exists.");
+
+        entity.Name = normalizedName;
         entity.Address = request.Address;
         entity.Phone = request.Phone;
         entity.Mobile = request.Mobile;
